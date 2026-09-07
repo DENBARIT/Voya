@@ -5,13 +5,21 @@ const port = 8000;
 
 // Middleware
 app.use(express.json());
+app.use((req, res, next) => {
+
+req.requestTime = new Date().toISOString();
+next();
+
+})
 
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
 );
 const getAllTours= (req, res) => {
+    console.log(req.requestTime);
   res.status(200).json({
     status: 'success',
+    requestTime: req.requestTime,
     results: tours.length,
     data: {
       tours,
@@ -118,6 +126,16 @@ res.status(204).json({
 
 // route chaining   
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
+
+
+
+// Reminder->the sequence in which middelwares are called matters a lot=>here if we call  get All Tours then the middleware will not be executed since the response objecct has been already returned but if we call get tour then the middlbeware will be called 
+// app.use((req, res, next) => {
+// console.log('Hello from the middleware');
+// next();   
+// });
+
+
 app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 app.listen(port, () => {
