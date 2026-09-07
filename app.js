@@ -9,7 +9,7 @@ app.use(express.json());
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
 );
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours= (req, res) => {
   res.status(200).json({
     status: 'success',
     results: tours.length,
@@ -17,11 +17,8 @@ app.get('/api/v1/tours', (req, res) => {
       tours,
     },
   });
-});
-
-
-// here we can make the parameters optional like /api/v1/tours/:id/:x?
-app.get('/api/v1/tours/:id', (req, res) => {
+}
+const getTour=(req, res) => {
 console.log(req.params);
 
 const id=req.params.id*1;
@@ -48,9 +45,9 @@ const tour=tours.find(el=>el.id===id);
       tour,
     },
   });
-});
+}
 
-app.post('/api/v1/tours', (req, res) => {
+const createTour= (req, res) => {
   // console.log(req.body);
 
   const newId = tours[tours.length - 1].id + 1;
@@ -71,9 +68,9 @@ app.post('/api/v1/tours', (req, res) => {
     },
   );
   //   res.send("Done");
-});
+}
 
-app.patch("/api/v1/tours/:id",(req,res)=>{
+const updateTour= (req,res)=>{
 
 const id=req.params.id*1;
 
@@ -91,10 +88,8 @@ res.status(200).json({
     }
 })
 
-})
-
-
-app.delete("/api/v1/tours/:id",(req,res)=>{
+}
+const deleteTour=(req,res)=>{
 
 const id=req.params.id*1;
 
@@ -108,8 +103,22 @@ res.status(204).json({
     status:"success",
     data:null
 })
-})
+};
 
+
+
+
+// app.get('/api/v1/tours',getAllTours);
+// here we can make the parameters optional like /api/v1/tours/:id/:x?
+// app.get('/api/v1/tours/:id', getTour);
+// app.post('/api/v1/tours',createTour);
+
+// app.patch("/api/v1/tours/:id",updateTour);
+// app.delete("/api/v1/tours/:id",deleteTour);
+
+// route chaining   
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
