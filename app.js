@@ -1,20 +1,23 @@
 const fs = require('fs');
 const express = require('express');
+const morgan = require('morgan');
 const app = express();
 const port = 8000;
 
 // Middleware
 app.use(express.json());
 app.use((req, res, next) => {
-
 req.requestTime = new Date().toISOString();
 next();
+});
+app.use(morgan('dev'));
 
-})
-
+// Route Handlers 
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
 );
+
+// Routes
 const getAllTours= (req, res) => {
     console.log(req.requestTime);
   res.status(200).json({
@@ -115,6 +118,18 @@ res.status(204).json({
 
 
 
+const getAllUsers= (req, res) => {
+    res.status(500).json({
+        status:'error',
+        message:'This route is not yet defined'
+    })
+}
+
+
+    
+
+
+
 
 // app.get('/api/v1/tours',getAllTours);
 // here we can make the parameters optional like /api/v1/tours/:id/:x?
@@ -124,19 +139,33 @@ res.status(204).json({
 // app.patch("/api/v1/tours/:id",updateTour);
 // app.delete("/api/v1/tours/:id",deleteTour);
 
+
+// Routes 
 // route chaining   
-app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 
+const tourRouter=express.Router();
+const userRouter=express.Router();
+
+
+// mounting routers
+app.use("/api/v1/tours",tourRouter);
+app.use("/api/v1/users",userRouter);
+
+tourRouter.route('/').get(getAllTours).post(createTour);
 
 // Reminder->the sequence in which middelwares are called matters a lot=>here if we call  get All Tours then the middleware will not be executed since the response objecct has been already returned but if we call get tour then the middlbeware will be called 
 // app.use((req, res, next) => {
 // console.log('Hello from the middleware');
 // next();   
 // });
+tourRouter.route("/:id").get(getTour).patch(updateTour).delete(deleteTour);
 
 
-app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour);
+// user routes
+// userRouter.route('/').get(getAllUsers).post(createUser);
+// userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
