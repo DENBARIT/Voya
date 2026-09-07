@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/DENBARIT/Voya/issues"
   },
-  "homepage": "https://github.com/DENBARIT/Voya#readme"
+  "homepage": "https://github.com/DENBARIT/Voya#readme",
+  "devDependencies": {
+    "prettier": "^3.9.6"
+  }
 }

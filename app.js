@@ -1,46 +1,78 @@
-
 const fs = require('fs');
 const express = require('express');
 const app = express();
 const port = 8000;
 
-
 // Middleware
 app.use(express.json());
 
-const tours=JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`));    
-app.get("/api/v1/tours",(req,res)=>{
-
-res.status(200).json({
-status:"success",
-results:tours.length,
-data:{
-    tours   
-}}
-)
-
+const tours = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
+);
+app.get('/api/v1/tours', (req, res) => {
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      tours,
+    },
+  });
 });
 
-app.post("/api/v1/tours",(req,res)=>{
-    // console.log(req.body);
 
-    const newId=tours[tours.length-1].id+1;
-    const newTour=Object.assign({id:newId},req.body);
+// here we can make the parameters optional like /api/v1/tours/:id/:x?
+app.get('/api/v1/tours/:id', (req, res) => {
+console.log(req.params);
 
-    tours.push(newTour);
+const id=req.params.id*1;
 
+// if(id>tours.length){
+//     return res.status(404).json({
+//         status:'fail',
+//         message:'Invalid ID'
+//     })
+// }
 
-    fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`,JSON.stringify(tours),(err)=>{
-res.status(201).json({
-    status:"success",
-    data:{
-        tour:newTour
-    }
-})
+const tour=tours.find(el=>el.id===id);
+
+ if(!tour){
+    return res.status(404).json({
+        status:'fail',
+        message:'Invalid ID'
     })
-//   res.send("Done");
-})
+}
+  res.status(200).json({
+    status: 'success',
+   
+    data: {
+      tour,
+    },
+  });
+});
 
-app.listen(port,()=>{
-    console.log(`Server is running on port ${port}`);
-})
+app.post('/api/v1/tours', (req, res) => {
+  // console.log(req.body);
+
+  const newId = tours[tours.length - 1].id + 1;
+  const newTour = Object.assign({ id: newId }, req.body);
+
+  tours.push(newTour);
+
+  fs.writeFile(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours),
+    (err) => {
+      res.status(201).json({
+        status: 'success',
+        data: {
+          tour: newTour,
+        },
+      });
+    },
+  );
+  //   res.send("Done");
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
