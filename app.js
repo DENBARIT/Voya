@@ -6,14 +6,21 @@ const userRouter=require('./routes/userRoutes');
 
 
 
-// Middleware
+// 1)Middlewares
+if(process.env.NODE_ENV==="development"){
+    app.use(morgan('dev'));
+}
+console.log(process.env.NODE_ENV);
 app.use(express.json());
+
 app.use((req, res, next) => {
 req.requestTime = new Date().toISOString();
 next();
 });
-app.use(morgan('dev'));
 
+
+ 
+app.use(express.static(`${__dirname}/public`));
 // Route Handlers 
 // app.get('/api/v1/tours',getAllTours);
 // here we can make the parameters optional like /api/v1/tours/:id/:x?
