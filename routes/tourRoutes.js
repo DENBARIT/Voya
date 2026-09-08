@@ -1,8 +1,10 @@
 const fs = require('fs');
-const {getAllTours,getTour,createTour,updateTour,deleteTour,checkID}=require('../controllers/tourController');
+const {getAllTours,getTour,createTour,updateTour,deleteTour,checkID,checkBody}=require('../controllers/tourController');
 const express = require('express');
 
 const Router=express.Router();
+
+
 Router.param("id",checkID); // this is a middleware function that can ran only run for the middleware function
  // this is a middleware function that can ran only run for the middleware function
 
@@ -15,7 +17,7 @@ Router.param("id",checkID); // this is a middleware function that can ran only r
 
 // });
 
-Router.route('/').get(getAllTours).post(createTour);
+Router.route('/').get(getAllTours).post(checkBody, createTour);
 Router.route("/:id").get(getTour).patch(updateTour).delete(deleteTour);
 
 module.exports = Router;
