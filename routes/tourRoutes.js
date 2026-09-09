@@ -10,7 +10,7 @@ const {
 
 const Router = express.Router();
 
-// Router.param('id', checkID);
+// Router.param('id');
 //  // this is a middleware function that can ran only run for the middleware function
 // this is a middleware function that can ran only run for the middleware function
 

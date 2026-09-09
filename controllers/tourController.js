@@ -1,44 +1,40 @@
 const Tour = require('../models/tourModel');
 
 // Routes
-exports.getAllTours = (req, res) => {
-  console.log(req.requestTime);
-  res.status(200).json({
-    status: 'success',
-    requestTime: req.requestTime,
-    // results: tours.length,
-    // data: {
-    //   tours,
-    // },
-  });
-};
-exports.getTour = (req, res) => {
-  console.log(req.params);
+exports.getAllTours = async (req, res) => {
+  try {
+    const tours = await Tour.find();
+    res.status(200).json({
+      status: 'success',
 
-  const id = req.params.id * 1;
-
-  // if(id>tours.length){
-  //     return res.status(404).json({
-  //         status:'fail',
-  //         message:'Invalid ID'
-  //     })
-  // }
-
-  const tour = tours.find((el) => el.id === id);
-
-  if (!tour) {
-    return res.status(404).json({
+      results: tours.length,
+      data: {
+        tours,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
       status: 'fail',
-      message: 'Invalid ID',
+      message: err,
     });
   }
-  res.status(200).json({
-    status: 'success',
-
-    data: {
-      tour,
-    },
-  });
+};
+exports.getTour = async (req, res) => {
+  try {
+    // Tour.findOne({_id:req.params.id}) // this is another way of finding a tour by id
+    const tour = await Tour.findById(req.params.id);
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour,
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 exports.createTour = async (req, res) => {
