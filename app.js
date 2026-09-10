@@ -33,7 +33,7 @@ app.use(express.static(`${__dirname}/public`));
 // Mounting routers
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
-
+app.set('query parser', 'extended');
 // Reminder->the sequence in which middelwares are called matters a lot=>here if we call  get All Tours then the middleware will not be executed since the response objecct has been already returned but if we call get tour then the middlbeware will be called
 // app.use((req, res, next) => {
 // console.log('Hello from the middleware');
