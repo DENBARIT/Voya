@@ -3,7 +3,8 @@ const Tour = require('../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 
 exports.aliasTopTours = (req, res, next) => {
-  res.locals.queryOptions = {
+  req.tourQuery = {
+    ...req.query,
     limit: '5',
     sort: '-ratingsAverage,price',
     fields: 'name,price,ratingsAverage,summary,difficulty',
@@ -77,12 +78,10 @@ exports.aliasTopTours = (req, res, next) => {
 // Routes
 exports.getAllTours = async (req, res) => {
   try {
-    console.log(req.query);
     // const tours = await Tour.find({
     //   duration: 5,
     //   difficulty: 'easy',
     // });
-    // const queryParams = { ...req.query, ...(res.locals.queryOptions || {}) };
     // const queryObj = { ...queryParams };
     // const excludedFields = ['page', 'sort', 'limit', 'fields'];
     // excludedFields.forEach((el) => delete queryObj[el]);
@@ -125,7 +124,7 @@ exports.getAllTours = async (req, res) => {
     //   .where('difficulty')
     //   .equals('easy');
     // Execute query
-    const features = new APIFeatures(Tour.find(), req.query)
+    const features = new APIFeatures(Tour.find(), req.tourQuery || req.query)
       .filter()
       .sort()
       .limitFields()
@@ -224,20 +223,6 @@ exports.deleteTour = async (req, res) => {
 exports.getTourStats = async (req, res) => {
   try {
     const stats = await Tour.aggregate([
-      {
-        $match: { ratingsAverage: { $gte: 4.5 } },
-      },
-      {
-        $group: {
-          _id: { $toUpper: '$difficulty' },
-          numRatings: { $sum: '$ratingsQuantity' },
-          avgRating: { $avg: '$ratingsAverage' },
-          avgPrice: { $avg: '$price' },
-          minPrice: { $min: '$price' },
-          maxPrice: { $max: '$price' },
-          numTours: { $sum: 1 },
-        },
-      },
       {
         $sort: { avgPrice: 1 },
       },

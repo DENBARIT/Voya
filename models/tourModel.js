@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -8,6 +9,7 @@ const tourSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    slug: String,
     ratingsAverage: {
       type: Number,
       default: 4.5,
@@ -64,6 +66,21 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
+
+// Mongose Middelwares(Hooks)
+// Document Middleware=runs before .save() and .create() but not on insertMany() or update()
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+// tourSchema.pre('save', (next) => {
+//   console.log('Will save document...');
+//   next();
+// });
+// tourSchema.post('save', (doc, next) => {
+//   console.log(doc);
+//   next();
+// });
 const Tour = mongoose.model('Tour', tourSchema);
 module.exports = Tour;
 
