@@ -53,11 +53,13 @@ const tourSchema = new mongoose.Schema(
     createdAt: {
       type: Date,
       default: Date.now(),
+      // not to select and show in the output
       select: false,
     },
     startDates: [Date],
   },
   {
+    // when does the virtual properties show up
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   },
@@ -67,21 +69,18 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 });
 
-// Mongose Middelwares(Hooks)
+// Mongose Middelwares(Hooks)=>it is known as pre and post hooks,documnent,model,aggregate,query middleware
 // Document Middleware=runs before .save() and .create() but not on insertMany() or update()
-tourSchema.pre('save', function (next) {
+// Mongoose 9 no longer passes `next` to pre hooks; just return (or return a promise)
+tourSchema.pre('save', function () {
   this.slug = slugify(this.name, { lower: true });
-  next();
 });
-// tourSchema.pre('save', (next) => {
-//   console.log('Will save document...');
-//   next();
-// });
+
 // tourSchema.post('save', (doc, next) => {
 //   console.log(doc);
+//   // since we have only one post middleware,no need of next middleware
 //   next();
 // });
 const Tour = mongoose.model('Tour', tourSchema);
 module.exports = Tour;
-
 // Fat models thin controllers
