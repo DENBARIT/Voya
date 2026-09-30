@@ -1,0 +1,72 @@
+const mongoose = require('mongoose');
+const slugify = require('slugify');
+const validator = require('validator');
+const bcrypt = require('bcryptjs');
+// name,email,photo,password,passwordConfirm
+const userSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [true, 'A user must have a name'],
+  },
+  photo: {
+    type: String,
+    default: 'default.jpg',
+  },
+  email: {
+    type: String,
+    required: [true, 'A user must have an email'],
+    unique: true,
+    lowercase: true,
+    validate: [validator.isEmail, 'Please provide a valid email'],
+  },
+
+  password: {
+    type: String,
+    required: [true, 'a user must have a password'],
+    minlength: 8,
+    select: false,
+  },
+  passwordConfirm: {
+    type: String,
+    required: [true, 'Please confirm your password'],
+    validate: {
+      //the function is called,whenever the new document is created,this only works on Create and Save
+      validator: function (el) {
+        return el === this.password;
+      },
+      message: 'Passwords are not the same!',
+    },
+  },
+  passwordChangedAt: Date,
+  passwordResetToken: String,
+});
+// between getting the data and persisting the data into the database
+userSchema.pre('save', async function () {
+  //only run if password was actually modfied
+  if (!this.isModified('password')) return;
+  // hash the password with cost of 12
+  this.password = await bcrypt.hash(this.password, 12);
+  // delete the passwordConfirm field
+  this.passwordConfirm = undefined;
+});
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  // instance method for comparing passwords
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    // base 10,integer parsing=>converting into the seconds since iat comes in seconds
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+    console.log(this.passwordChangedAt, JWTTimestamp);
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false; // false means not changed
+};
+const User = mongoose.model('User', userSchema);
+module.exports = User;
