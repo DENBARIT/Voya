@@ -4,7 +4,8 @@ const morgan = require('morgan');
 const app = express();
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
-
+const globalErrorHandler = require('./controllers/errorController');
+const AppError = require('./utils/appError');
 // 1)Middlewares
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -14,9 +15,10 @@ app.use(express.json());
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  // console.log(req.headers);
   next();
 });
-
+// this is directly to serve the file to the browser without any route handler,since there is no need of calculating ,changing or manipulating the file ,we simply serve the files
 app.use(express.static(`${__dirname}/public`));
 // Route Handlers
 // app.get('/api/v1/tours',getAllTours);
@@ -39,7 +41,19 @@ app.set('query parser', 'extended');
 // console.log('Hello from the middleware');
 // next();
 // });
-
+// for all verbs we use app.get,app.post,app.patch,app.delete,app.all
+app.all('/*splat', (req, res, next) => {
+  // res.status(404).json({
+  //   status: 'fail',
+  //   message: `Can't find ${req.originalUrl} on this server!`,
+  // });
+  // const err = new Error(`Can't find ${req.originalUrl} on this server!`);
+  // err.status = 'fail';
+  // err.statusCode = 404;
+  // here we have an error and so that skip the normal middleware and go to the error-handling middleware
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+app.use(globalErrorHandler);
 // user routes
 // userRouter.route('/').get(getAllUsers).post(createUser);
 // userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
