@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
@@ -11,6 +12,10 @@ const userSchema = new mongoose.Schema({
   photo: {
     type: String,
     default: 'default.jpg',
+  },
+  role: {
+    type: String,
+    enum: ['user', 'guide', 'lead-guide', 'admin'],
   },
   email: {
     type: String,
@@ -39,6 +44,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 // between getting the data and persisting the data into the database
 userSchema.pre('save', async function () {
@@ -49,6 +55,7 @@ userSchema.pre('save', async function () {
   // delete the passwordConfirm field
   this.passwordConfirm = undefined;
 });
+// we attach instance methods to the schema,so that we can use them in the controllers
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword,
@@ -67,6 +74,16 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     return JWTTimestamp < changedTimestamp;
   }
   return false; // false means not changed
+};
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+  console.log({ resetToken }, this.passwordResetToken);
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; //10 minutes
+  return resetToken;
 };
 const User = mongoose.model('User', userSchema);
 module.exports = User;
