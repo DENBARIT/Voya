@@ -15,7 +15,10 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'guide', 'lead-guide', 'admin'],
+    enum: {
+      values: ['user', 'guide', 'lead-guide', 'admin'],
+      message: 'Please select a valid role',
+    },
   },
   email: {
     type: String,
@@ -45,6 +48,11 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
 });
 // between getting the data and persisting the data into the database
 userSchema.pre('save', async function () {
@@ -54,6 +62,15 @@ userSchema.pre('save', async function () {
   this.password = await bcrypt.hash(this.password, 12);
   // delete the passwordConfirm field
   this.passwordConfirm = undefined;
+});
+userSchema.pre('save', function () {
+  // if password not confirmed and the document is new, then we don't want to set the passwordChangedAt property
+  if (!this.isModified('password') || this.isNew) return;
+  this.passwordChangedAt = Date.now() - 1000;
+});
+userSchema.pre(/^find/, function () {
+  // this points to the current query
+  this.find({ active: { $ne: false } });
 });
 // we attach instance methods to the schema,so that we can use them in the controllers
 userSchema.methods.correctPassword = async function (
@@ -77,6 +94,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
 };
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString('hex');
+  //here we create the hash function or think of it as machine then update that machince with reset/token and then digesting converts form binary to hexadecimal
   this.passwordResetToken = crypto
     .createHash('sha256')
     .update(resetToken)
