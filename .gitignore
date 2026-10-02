@@ -2,3 +2,6 @@ node_modules/
 public/js/mapbox-config.js
 .env
 config.env
+
+# personal study notes
+Notes on Data Modelling/
