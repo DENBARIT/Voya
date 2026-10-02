@@ -110,7 +110,9 @@ const tourSchema = new mongoose.Schema(
         day: Number,
       },
     ],
-    guides: Array,
+    // guides: Array,
+    // for child referencing, we will store the id of the user in the guides array
+    guides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
   {
     // when does the virtual properties show up
@@ -130,11 +132,11 @@ tourSchema.pre('save', function () {
   // the this keyword pointing to the current document
   this.slug = slugify(this.name, { lower: true });
 });
-
-tourSchema.pre('save', async function () {
-  const guidesPromises = this.guides.map(async (id) => await User.findById(id));
-  this.guides = await Promise.all(guidesPromises);
-});
+// If we use the embedding approach for the guides  inside the tour model
+// tourSchema.pre('save', async function () {
+//   const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//   this.guides = await Promise.all(guidesPromises);
+// });
 // tourSchema.post('save', (doc, next) => {
 //   console.log(doc);
 //   // since we have only one post middleware,no need of next middleware
