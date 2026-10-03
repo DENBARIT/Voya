@@ -142,6 +142,12 @@ tourSchema.pre('save', function () {
 //   // since we have only one post middleware,no need of next middleware
 //   next();
 // });
+tourSchema.pre(/^find/, function () {
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+});
 // Query middleware=it runs before and after the query is executed
 tourSchema.pre(/^find/, function () {
   // this keyword pointing to the current query

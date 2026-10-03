@@ -38,7 +38,10 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
   // Tour.findOne({_id:req.params.id}) // this is another way of finding a tour by id
+  //  populate() is used to populate the guides array with the actual user documents instead of just their ObjectIds. It replaces the ObjectIds in the guides array with the corresponding user documents from the User collection.
+  // const tour = await Tour.findById(req.params.id).populate('guides');
   const tour = await Tour.findById(req.params.id);
+
   if (!tour) {
     return next(new AppError('No tour found with that ID', 404));
   }
